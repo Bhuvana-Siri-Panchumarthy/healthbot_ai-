@@ -1,67 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HealthBot 🤖</title>
+  <title>HealthBot AI</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
-    .chat-container { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .chat-box { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #fafafa; }
-    .message { margin: 10px 0; }
-    .bot { color: #1a73e8; }
-    .user { color: #333; text-align: right; }
-    input[type="text"] { width: 80%; padding: 10px; margin-top: 15px; }
-    button { padding: 10px 15px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    body {
+      background: linear-gradient(to right, #e3f2fd, #e1f5fe);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+    }
+    #chatbox {
+      border: 2px solid #0097a7;
+      border-radius: 15px;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .user, .bot {
+      margin: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      max-width: 70%;
+      font-size: 16px;
+    }
+    .user {
+      background-color: #c8e6c9;
+      text-align: right;
+      margin-left: auto;
+    }
+    .bot {
+      background-color: #fff9c4;
+      text-align: left;
+    }
+    input {
+      padding: 10px;
+      width: 70%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #00acc1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #007c91;
+    }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <h2>👩‍⚕️ HealthBot</h2>
-    <div class="chat-box" id="chat"></div>
-    <input type="text" id="userInput" placeholder="Type your message here..." />
+
+  <h2>🤖 HealthBot AI</h2>
+  <div>
+    <input type="text" id="username" placeholder="Enter your name" />
+    <button onclick="startChat()">Start</button>
+  </div>
+  <div id="chatbox"></div>
+  <div id="messageArea" style="display:none; margin-top:10px;">
+    <input type="text" id="msg" placeholder="Type your message..." />
     <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
-    let userName = prompt("Enter your name:");
-    const chatBox = document.getElementById("chat");
+    let userName = "";
+    let askedDay = false;
 
-    function botReply(input) {
-      input = input.toLowerCase();
-      if (input.includes("i'm fine") || input.includes("i am fine")) return `😊 I'm glad to hear that, ${userName}!`;
-      if (input.includes("feeling bad") || input.includes("not good") || input.includes("low")) return `😟 Oh no! What happened, ${userName}?`;
-      if (input.includes("how was your day")) return `😊 Thanks for asking, ${userName}! I had a great day helping people like you.`;
-      if (input.includes("fever")) return `🌡️ Take Dolo 650 and drink warm fluids, ${userName}.`;
-      if (input.includes("headache")) return `🧠 Try Paracetamol (Crocin), ${userName}, and rest in a quiet room.`;
-      if (input.includes("cold")) return `🤧 Steam inhalation + Cetirizine can help, ${userName}.`;
-      if (input.includes("cough")) return `😷 Use Benadryl and drink warm water, ${userName}.`;
-      if (input.includes("thank")) return `🤗 You're welcome, ${userName}. Take care!`;
-      if (input.includes("help")) return `🩺 I can help with common symptoms like fever, cold, cough, headache, stomach pain, etc.`;
-      if (input.includes("exit")) return `👋 Goodbye, ${userName}! Stay healthy.`;
-      return `🤔 I'm not sure, ${userName}, but feel free to ask me about any health issue.`;
+    const healthResponses = [
+      { keywords: ["fever"], response: "Take rest, drink fluids, and use paracetamol 💊. You should feel better in 1-2 days." },
+      { keywords: ["headache"], response: "Try to rest in a dark room and stay hydrated 💆‍♀️. Use a mild painkiller if needed." },
+      { keywords: ["cold"], response: "Keep warm, take steam inhalation, and drink warm fluids 🤧." },
+      { keywords: ["cough"], response: "Use cough syrup or honey lemon tea 🍯. See a doctor if it persists." },
+      { keywords: ["vomiting"], response: "Stay hydrated. Use ORS and avoid solid foods for a while 🤢." },
+      { keywords: ["diarrhea"], response: "Drink ORS, avoid oily food. If severe, consult a doctor 💩." },
+      { keywords: ["stomach pain", "abdominal pain"], response: "Avoid spicy food, take rest. If it continues, please consult a doctor 🔥." },
+      { keywords: ["acidity"], response: "Try cold milk or antacid 🥛. Avoid spicy and oily foods." },
+      { keywords: ["allergy"], response: "Avoid allergens and use antihistamines if needed 🌸." },
+      { keywords: ["asthma"], response: "Use inhaler if prescribed and avoid triggers 🌬️. Consult a doctor if it worsens." },
+      { keywords: ["back pain"], response: "Do stretching exercises and take rest 🛌. Apply warm compress." },
+      { keywords: ["eye pain"], response: "Take a break from screens, and wash eyes with cold water 👁️." },
+      { keywords: ["ear pain"], response: "Don’t insert objects, apply warm compress. Consult a doctor if needed 👂." },
+      { keywords: ["leg pain"], response: "Massage gently, elevate legs. Stay hydrated 🦵." },
+      { keywords: ["tooth pain"], response: "Use a cold compress and clove oil. Visit dentist if pain persists 🦷." },
+      { keywords: ["burn"], response: "Cool with water, don’t apply ice. See doctor if serious 🔥." },
+      { keywords: ["wound", "cut"], response: "Clean with antiseptic and cover with a bandage 🩹." },
+      { keywords: ["fracture", "bone"], response: "Immobilize area and consult doctor immediately 🦴." },
+      { keywords: ["chest pain"], response: "Can be serious! Please consult a doctor immediately ❤️." },
+      { keywords: ["high bp", "blood pressure"], response: "Relax, reduce salt, monitor regularly. Doctor consultation advised ⚠️." },
+      { keywords: ["sugar", "diabetes"], response: "Monitor glucose, eat balanced meals 🍽️. Consult doctor for treatment." },
+      { keywords: ["skin rash"], response: "Apply soothing lotion or aloe vera. If spreading, consult doctor 🌿." },
+      { keywords: ["infection"], response: "Use prescribed antibiotics. Don’t self-medicate 🧫." },
+      { keywords: ["menstrual pain"], response: "Apply heat pad, rest, and drink warm water ♀️." },
+      { keywords: ["depression", "mental"], response: "It’s okay to not feel okay 🧠. Please talk to someone or consult a professional." }
+    ];
+
+    function startChat() {
+      userName = document.getElementById("username").value.trim();
+      if (userName) {
+        document.getElementById("chatbox").innerHTML = "";
+        addBotMessage(`Hello ${userName}, how are you today? 😊`);
+        document.getElementById("messageArea").style.display = "block";
+      }
     }
 
     function sendMessage() {
-      const userInput = document.getElementById("userInput");
-      const text = userInput.value;
-      if (!text.trim()) return;
+      const msg = document.getElementById("msg").value.trim();
+      if (!msg) return;
 
-      // Display user message
-      const userMsg = document.createElement("div");
-      userMsg.className = "message user";
-      userMsg.textContent = text;
-      chatBox.appendChild(userMsg);
+      addUserMessage(msg);
+      document.getElementById("msg").value = "";
 
-      // Display bot reply
-      const botMsg = document.createElement("div");
-      botMsg.className = "message bot";
-      botMsg.textContent = botReply(text);
-      chatBox.appendChild(botMsg);
+      const lowerMsg = msg.toLowerCase();
+      let response = "";
 
-      chatBox.scrollTop = chatBox.scrollHeight;
-      userInput.value = "";
+      if (lowerMsg.includes("fine")) {
+        response = `I'm glad to hear that, ${userName}! 😊`;
+      } else if (lowerMsg.includes("not good") || lowerMsg.includes("bad") || lowerMsg.includes("low") || lowerMsg.includes("sad")) {
+        response = `Oh what happened, ${userName}? 😟 How was your day?`;
+        askedDay = true;
+      } else if (askedDay && (lowerMsg.includes("good") || lowerMsg.includes("nice") || lowerMsg.includes("great"))) {
+        response = `That’s nice to hear! 🌟 Take some rest and stay positive.`;
+        askedDay = false;
+      } else if (askedDay && (lowerMsg.includes("boring") || lowerMsg.includes("bad") || lowerMsg.includes("worst"))) {
+        response = `Ohh it’s okay, don’t worry! Better days will come 🌈`;
+        askedDay = false;
+      } else if (lowerMsg.includes("thank")) {
+        response = `It's okay ${userName}, take care! 🫶`;
+      } else {
+        let matched = false;
+        for (let item of healthResponses) {
+          for (let keyword of item.keywords) {
+            if (lowerMsg.includes(keyword)) {
+              response = item.response;
+              matched = true;
+              break;
+            }
+          }
+          if (matched) break;
+        }
+
+        if (!matched) {
+          response = `Okay! If you have any health issue, come and ask me freely 😊`;
+        }
+      }
+
+      addBotMessage(response);
+    }
+
+    function addUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "user";
+      div.innerText = text;
+      document.getElementById("chatbox").appendChild(div);
+      scrollDown();
+    }
+
+    function addBotMessage(text) {
+      const div = document.createElement("div");
+      div.className = "bot";
+      div.innerText = text;
+      document.getElementById("chatbox").appendChild(div);
+      scrollDown();
+    }
+
+    function scrollDown() {
+      const chatbox = document.getElementById("chatbox");
+      chatbox.scrollTop = chatbox.scrollHeight;
     }
   </script>
+
 </body>
 </html>
