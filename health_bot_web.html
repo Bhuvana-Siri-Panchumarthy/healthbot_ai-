@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthBot 🤖</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
+    .chat-container { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .chat-box { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #fafafa; }
+    .message { margin: 10px 0; }
+    .bot { color: #1a73e8; }
+    .user { color: #333; text-align: right; }
+    input[type="text"] { width: 80%; padding: 10px; margin-top: 15px; }
+    button { padding: 10px 15px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h2>👩‍⚕️ HealthBot</h2>
+    <div class="chat-box" id="chat"></div>
+    <input type="text" id="userInput" placeholder="Type your message here..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    let userName = prompt("Enter your name:");
+    const chatBox = document.getElementById("chat");
+
+    function botReply(input) {
+      input = input.toLowerCase();
+      if (input.includes("i'm fine") || input.includes("i am fine")) return `😊 I'm glad to hear that, ${userName}!`;
+      if (input.includes("feeling bad") || input.includes("not good") || input.includes("low")) return `😟 Oh no! What happened, ${userName}?`;
+      if (input.includes("how was your day")) return `😊 Thanks for asking, ${userName}! I had a great day helping people like you.`;
+      if (input.includes("fever")) return `🌡️ Take Dolo 650 and drink warm fluids, ${userName}.`;
+      if (input.includes("headache")) return `🧠 Try Paracetamol (Crocin), ${userName}, and rest in a quiet room.`;
+      if (input.includes("cold")) return `🤧 Steam inhalation + Cetirizine can help, ${userName}.`;
+      if (input.includes("cough")) return `😷 Use Benadryl and drink warm water, ${userName}.`;
+      if (input.includes("thank")) return `🤗 You're welcome, ${userName}. Take care!`;
+      if (input.includes("help")) return `🩺 I can help with common symptoms like fever, cold, cough, headache, stomach pain, etc.`;
+      if (input.includes("exit")) return `👋 Goodbye, ${userName}! Stay healthy.`;
+      return `🤔 I'm not sure, ${userName}, but feel free to ask me about any health issue.`;
+    }
+
+    function sendMessage() {
+      const userInput = document.getElementById("userInput");
+      const text = userInput.value;
+      if (!text.trim()) return;
+
+      // Display user message
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = text;
+      chatBox.appendChild(userMsg);
+
+      // Display bot reply
+      const botMsg = document.createElement("div");
+      botMsg.className = "message bot";
+      botMsg.textContent = botReply(text);
+      chatBox.appendChild(botMsg);
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+      userInput.value = "";
+    }
+  </script>
+</body>
+</html>
